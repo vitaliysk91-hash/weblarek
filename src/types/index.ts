@@ -9,10 +9,8 @@ export interface IApi {
   ): Promise<T>;
 }
 
-/** Доступные способы оплаты заказа. */
 export type TPayment = 'card' | 'cash';
 
-/** Данные товара, получаемые из каталога. */
 export interface IProduct {
   id: string;
   description: string;
@@ -22,7 +20,6 @@ export interface IProduct {
   price: number | null;
 }
 
-/** Данные покупателя, заполняемые при оформлении заказа. */
 export interface IBuyer {
   payment: TPayment | '';
   email: string;
@@ -30,24 +27,76 @@ export interface IBuyer {
   address: string;
 }
 
-/** Ошибки валидации отдельных полей покупателя. */
 export type TBuyerErrors = Partial<Record<keyof IBuyer, string>>;
 
-/** Ответ сервера со списком товаров. */
 export interface IProductsResponse {
   total: number;
   items: IProduct[];
 }
 
-/** Данные заказа, отправляемые на сервер. */
 export interface IOrder extends Omit<IBuyer, 'payment'> {
   payment: TPayment;
   total: number;
   items: string[];
 }
 
-/** Ответ сервера после успешного оформления заказа. */
 export interface IOrderResult {
   id: string;
   total: number;
+}
+
+export interface IPageView {
+  catalog: HTMLElement[];
+  basketCount: number;
+}
+
+export interface ICardView {
+  title: string;
+  price: number | null;
+  category?: string;
+  image?: string;
+  description?: string;
+}
+
+export interface IPreviewCardView extends ICardView {
+  buttonText: string;
+  buttonDisabled: boolean;
+}
+
+export interface IBasketCardView extends ICardView {
+  index: number;
+}
+
+export interface IBasketView {
+  items: HTMLElement[];
+  total: number;
+  valid: boolean;
+}
+
+export interface IFormView {
+  valid: boolean;
+  errors: string[];
+}
+
+export interface IOrderFormView extends IFormView {
+  payment: TPayment | '';
+  address: string;
+}
+
+export interface IContactsFormView extends IFormView {
+  email: string;
+  phone: string;
+}
+
+export interface ISuccessView {
+  total: number;
+}
+
+export interface IProductEvent {
+  id: string;
+}
+
+export interface IFormChangeEvent {
+  field: keyof IBuyer;
+  value: string;
 }

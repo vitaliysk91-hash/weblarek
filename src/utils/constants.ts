@@ -14,9 +14,28 @@ export const categoryMap = {
   'кнопка': 'card__category_button',
   'дополнительное': 'card__category_additional',
   'другое': 'card__category_other',
-};
+} as const;
+
+/** Имена событий приложения. */
+export const EVENTS = {
+  productsChanged: 'products:changed',
+  productSelected: 'product:selected',
+  basketChanged: 'basket:changed',
+  buyerChanged: 'buyer:changed',
+
+  cardSelect: 'card:select',
+  productAdd: 'product:add',
+  productRemove: 'product:remove',
+  basketOpen: 'basket:open',
+  basketRemove: 'basket:remove',
+  orderOpen: 'order:open',
+  orderSubmit: 'order:submit',
+  contactsSubmit: 'contacts:submit',
+  formChange: 'form:change',
+  modalClose: 'modal:close',
+  successClose: 'success:close',
+} as const;
 
 export const settings = {
 
 };
-

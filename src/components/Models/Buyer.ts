@@ -1,4 +1,6 @@
 import type { IBuyer, TBuyerErrors } from '../../types';
+import type { IEvents } from '../base/Events';
+import { EVENTS } from '../../utils/constants';
 
 const EMPTY_BUYER: IBuyer = {
   payment: '',
@@ -7,29 +9,28 @@ const EMPTY_BUYER: IBuyer = {
   address: '',
 };
 
-/** Модель данных покупателя. */
 export class Buyer {
   private data: IBuyer = { ...EMPTY_BUYER };
 
-  /** Частично обновляет данные покупателя, не стирая остальные поля. */
+  constructor(private readonly events: IEvents) {}
+
   setData(data: Partial<IBuyer>): void {
     this.data = {
       ...this.data,
       ...data,
     };
+    this.events.emit(EVENTS.buyerChanged);
   }
 
-  /** Возвращает все сохранённые данные покупателя. */
   getData(): IBuyer {
     return { ...this.data };
   }
 
-  /** Очищает данные покупателя. */
-  clear(): void {
+   clear(): void {
     this.data = { ...EMPTY_BUYER };
+    this.events.emit(EVENTS.buyerChanged);
   }
 
-  /** Проверяет заполненность всех полей и возвращает объект ошибок. */
   validate(): TBuyerErrors {
     const errors: TBuyerErrors = {};
 

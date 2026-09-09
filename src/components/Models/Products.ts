@@ -1,31 +1,32 @@
 import type { IProduct } from '../../types';
+import type { IEvents } from '../base/Events';
+import { EVENTS } from '../../utils/constants';
 
-/** Модель данных каталога товаров. */
 export class Products {
   private items: IProduct[] = [];
   private selectedItem: IProduct | null = null;
 
-  /** Сохраняет массив товаров в модели. */
+  constructor(private readonly events: IEvents) {}
+
   setItems(items: IProduct[]): void {
     this.items = [...items];
+    this.events.emit(EVENTS.productsChanged);
   }
 
-  /** Возвращает массив товаров из модели. */
   getItems(): IProduct[] {
     return [...this.items];
   }
 
-  /** Возвращает товар по идентификатору. */
-  getItemById(id: string): IProduct | undefined {
+    getItemById(id: string): IProduct | undefined {
     return this.items.find((item) => item.id === id);
   }
 
-  /** Сохраняет товар, выбранный для подробного отображения. */
   setSelectedItem(item: IProduct): void {
     this.selectedItem = item;
+    this.events.emit(EVENTS.productSelected);
   }
 
-  /** Возвращает товар, выбранный для подробного отображения. */
+
   getSelectedItem(): IProduct | null {
     return this.selectedItem;
   }

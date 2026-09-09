@@ -1,42 +1,51 @@
 import type { IProduct } from '../../types';
+import type { IEvents } from '../base/Events';
+import { EVENTS } from '../../utils/constants';
 
-/** Модель данных корзины покупателя. */
 export class Basket {
   private items: IProduct[] = [];
 
-  /** Возвращает товары, находящиеся в корзине. */
+  constructor(private readonly events: IEvents) {}
+
   getItems(): IProduct[] {
     return [...this.items];
   }
 
-  /** Добавляет товар в корзину, если его там ещё нет. */
   addItem(item: IProduct): void {
-    if (!this.hasItem(item.id)) {
-      this.items.push(item);
+    if (this.hasItem(item.id)) {
+      return;
     }
+
+    this.items.push(item);
+    this.events.emit(EVENTS.basketChanged);
   }
 
-  /** Удаляет переданный товар из корзины. */
   removeItem(item: IProduct): void {
+    if (!this.hasItem(item.id)) {
+      return;
+    }
+
     this.items = this.items.filter((basketItem) => basketItem.id !== item.id);
+    this.events.emit(EVENTS.basketChanged);
   }
 
-  /** Полностью очищает корзину. */
   clear(): void {
+    if (this.items.length === 0) {
+      return;
+    }
+
     this.items = [];
+    this.events.emit(EVENTS.basketChanged);
   }
 
-  /** Возвращает общую стоимость товаров в корзине. */
   getTotal(): number {
     return this.items.reduce((total, item) => total + (item.price ?? 0), 0);
   }
 
-  /** Возвращает количество товаров в корзине. */
   getCount(): number {
     return this.items.length;
   }
 
-  /** Проверяет наличие товара в корзине по его идентификатору. */
   hasItem(id: string): boolean {
     return this.items.some((item) => item.id === id);
   }
