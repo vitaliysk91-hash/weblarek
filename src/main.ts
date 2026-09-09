@@ -15,7 +15,7 @@ import { Page } from './components/View/Page';
 import { PreviewCard } from './components/View/PreviewCard';
 import { Success } from './components/View/Success';
 import type {
-  ICardView,
+  ICatalogCardView,
   IFormChangeEvent,
   IOrder,
   IProduct,
@@ -38,12 +38,10 @@ const api = new Api(API_URL);
 const larekApi = new LarekApi(api);
 
 const page = new Page(ensureElement<HTMLElement>('.page'), events);
-const modal = new Modal(
-  ensureElement<HTMLElement>('#modal-container'),
-  events
-);
-const basketView = new BasketView(
-  cloneTemplate<HTMLElement>('#basket'),
+const modal = new Modal(ensureElement<HTMLElement>('#modal-container'), events);
+const basketView = new BasketView(cloneTemplate<HTMLElement>('#basket'), events);
+const previewCard = new PreviewCard(
+  cloneTemplate<HTMLElement>('#card-preview'),
   events
 );
 const orderForm = new OrderForm(
@@ -59,13 +57,12 @@ const successView = new Success(
   events
 );
 
-function getCardData(product: IProduct): ICardView {
+function getCatalogCardData(product: IProduct): ICatalogCardView {
   return {
     title: product.title,
     price: product.price,
     category: product.category,
     image: `${CDN_URL}${product.image}`,
-    description: product.description,
   };
 }
 
@@ -77,7 +74,7 @@ function renderCatalog(): void {
       product.id
     );
 
-    return card.render(getCardData(product));
+    return card.render(getCatalogCardData(product));
   });
 
   page.render({ catalog: cards });
@@ -134,7 +131,7 @@ function renderBuyerForms(): void {
   });
 }
 
-function openProductPreview(): void {
+function renderProductPreview(): void {
   const product = productsModel.getSelectedItem();
   if (!product) {
     return;
@@ -142,23 +139,19 @@ function openProductPreview(): void {
 
   const isUnavailable = product.price === null;
   const isInBasket = basketModel.hasItem(product.id);
-  const actionEvent = isInBasket ? EVENTS.productRemove : EVENTS.productAdd;
   const buttonText = isUnavailable
     ? PRODUCT_UNAVAILABLE_TEXT
     : isInBasket
       ? PRODUCT_REMOVE_TEXT
       : PRODUCT_ADD_TEXT;
 
-  const previewCard = new PreviewCard(
-    cloneTemplate<HTMLElement>('#card-preview'),
-    events,
-    actionEvent,
-    product.id
-  );
-
   modal.render({
     content: previewCard.render({
-      ...getCardData(product),
+      title: product.title,
+      price: product.price,
+      category: product.category,
+      image: `${CDN_URL}${product.image}`,
+      description: product.description,
       buttonText,
       buttonDisabled: isUnavailable,
     }),
@@ -167,19 +160,16 @@ function openProductPreview(): void {
 }
 
 function openBasket(): void {
-  renderBasket();
   modal.render({ content: basketView.render() });
   modal.open();
 }
 
 function openOrderForm(): void {
-  renderBuyerForms();
   modal.render({ content: orderForm.render() });
   modal.open();
 }
 
 function openContactsForm(): void {
-  renderBuyerForms();
   modal.render({ content: contactsForm.render() });
   modal.open();
 }
@@ -201,6 +191,21 @@ function updateBuyerField({ field, value }: IFormChangeEvent): void {
       buyerModel.setData({ phone: value });
       break;
   }
+}
+
+function handleProductAction(): void {
+  const product = productsModel.getSelectedItem();
+  if (!product || product.price === null) {
+    return;
+  }
+
+  if (basketModel.hasItem(product.id)) {
+    basketModel.removeItem(product);
+  } else {
+    basketModel.addItem(product);
+  }
+
+  modal.close();
 }
 
 function submitOrder(): void {
@@ -236,13 +241,13 @@ function submitOrder(): void {
     });
 }
 
-// События моделей.
+// Представления с данными обновляются только в событиях моделей.
 events.on(EVENTS.productsChanged, renderCatalog);
-events.on(EVENTS.productSelected, openProductPreview);
+events.on(EVENTS.productSelected, renderProductPreview);
 events.on(EVENTS.basketChanged, renderBasket);
 events.on(EVENTS.buyerChanged, renderBuyerForms);
 
-// События представлений.
+// События представлений меняют модели или открывают уже созданные компоненты.
 events.on<IProductEvent>(EVENTS.cardSelect, ({ id }) => {
   const product = productsModel.getItemById(id);
   if (product) {
@@ -250,21 +255,7 @@ events.on<IProductEvent>(EVENTS.cardSelect, ({ id }) => {
   }
 });
 
-events.on<IProductEvent>(EVENTS.productAdd, ({ id }) => {
-  const product = productsModel.getItemById(id);
-  if (product && product.price !== null) {
-    basketModel.addItem(product);
-    modal.close();
-  }
-});
-
-events.on<IProductEvent>(EVENTS.productRemove, ({ id }) => {
-  const product = productsModel.getItemById(id);
-  if (product) {
-    basketModel.removeItem(product);
-    modal.close();
-  }
-});
+events.on(EVENTS.productAction, handleProductAction);
 
 events.on<IProductEvent>(EVENTS.basketRemove, ({ id }) => {
   const product = productsModel.getItemById(id);
@@ -281,11 +272,11 @@ events.on(EVENTS.contactsSubmit, submitOrder);
 events.on(EVENTS.modalClose, () => modal.close());
 events.on(EVENTS.successClose, () => modal.close());
 
-// Начальное состояние и загрузка каталога.
-renderBasket();
-
-larekApi.getProducts().then((response) => {
-  productsModel.setItems(response.items);
-}).catch((error: unknown) => {
-  console.error('Ошибка загрузки каталога:', error);
-});
+larekApi
+  .getProducts()
+  .then((response) => {
+    productsModel.setItems(response.items);
+  })
+  .catch((error: unknown) => {
+    console.error('Ошибка загрузки каталога:', error);
+  });

@@ -1,24 +1,10 @@
 # Проектная работа «Веб-ларёк»
 
-https://github.com/vitaliysk91-hash/weblarek
+Репозиторий: https://github.com/vitaliysk91-hash/weblarek
 
-Стек: HTML, SCSS, TypeScript, Vite.
+«Веб-ларёк» — интернет-магазин товаров для веб-разработчиков. Пользователь может посмотреть каталог, открыть карточку товара, добавить товар в корзину, оформить заказ и отправить его на сервер.
 
-«Веб-ларёк» — интернет-магазин товаров для веб-разработчиков. Пользователь может просматривать каталог и подробную информацию о товарах, добавлять и удалять товары из корзины, заполнять данные заказа и отправлять заказ на сервер.
-
-Проект построен по архитектурному паттерну MVP и использует событийную модель для связи независимых слоёв приложения.
-
-## Структура проекта
-
-- `src/components/base/` — базовые классы `Component`, `Api`, `EventEmitter`;
-- `src/components/Models/` — модели данных `Products`, `Basket`, `Buyer`;
-- `src/components/View/` — компоненты слоя представления;
-- `src/components/Api/` — коммуникационный класс `LarekApi`;
-- `src/types/index.ts` — типы и интерфейсы приложения;
-- `src/utils/` — константы и вспомогательные функции;
-- `src/main.ts` — Presenter и сборка всех слоёв приложения;
-- `src/scss/` и `src/common.blocks/` — стили;
-- `index.html` — основная разметка и HTML-шаблоны.
+Стек проекта: **HTML, SCSS, TypeScript, Vite**.
 
 ## Установка и запуск
 
@@ -34,124 +20,126 @@ npm install
 VITE_API_ORIGIN=https://larek-api.nomoreparties.co
 ```
 
-Запустить проект:
+Запустить проект в режиме разработки:
 
 ```bash
 npm run dev
 ```
 
-## Сборка
+Собрать проект:
 
 ```bash
 npm run build
 ```
 
-# Архитектура приложения
+## Структура проекта
 
-В проекте используется паттерн **MVP (Model-View-Presenter)**.
+Основные файлы и папки:
 
-- **Model** хранит и изменяет данные приложения. Модели не работают с DOM и API. После изменения данных модель генерирует событие.
-- **View** отвечает только за отображение состояния интерфейса и уведомляет о действиях пользователя событиями. Компоненты представления не хранят бизнес-данные и не принимают решения о сценариях приложения.
-- **Presenter** реализован в `src/main.ts`. Он подписывается на события моделей и представлений, получает данные из моделей, подготавливает данные для View и вызывает методы других слоёв. Presenter сам события не генерирует.
+- `src/components/base/` — базовые классы `Component`, `Api`, `EventEmitter`;
+- `src/components/Models/` — модели данных `Products`, `Basket`, `Buyer`;
+- `src/components/View/` — классы представления;
+- `src/components/Api/` — класс `LarekApi` для работы с сервером;
+- `src/types/index.ts` — типы и интерфейсы;
+- `src/utils/` — константы и вспомогательные функции;
+- `src/main.ts` — Presenter и связывание всех частей приложения;
+- `src/scss/`, `src/common.blocks/` — стили;
+- `index.html` — основная разметка и HTML-шаблоны.
 
-Связь между слоями реализована через единый экземпляр `EventEmitter`. HTTP-запросы вынесены в отдельный коммуникационный класс `LarekApi`.
+# Архитектура
 
-# Базовый код
+Проект построен по паттерну **MVP (Model–View–Presenter)**.
 
-## Класс `Component<T>`
+**Model** хранит данные приложения и изменяет их. Модели не работают с DOM и не выполняют HTTP-запросы. После изменения данных модель сообщает об этом через событие.
 
-Абстрактный базовый класс для компонентов представления. Тип `T` описывает данные, которые компонент принимает в метод `render`.
+**View** отвечает за отображение. Компоненты представления работают только со своей частью DOM и сообщают о действиях пользователя через события. Бизнес-данные во View не хранятся.
+
+**Presenter** находится в `src/main.ts`. Он подписывается на события моделей и представлений, получает данные из моделей и передаёт подготовленные данные компонентам View.
+
+Для связи компонентов используется один экземпляр `EventEmitter`.
+
+# Базовые классы
+
+## `Component<T>`
+
+Абстрактный базовый класс для компонентов представления.
 
 ### Конструктор
 
-`constructor(container: HTMLElement)` — принимает корневой DOM-элемент компонента.
+```ts
+constructor(container: HTMLElement)
+```
+
+`container` — корневой DOM-элемент компонента.
 
 ### Поля
 
-- `container: HTMLElement` — защищённый корневой элемент компонента.
+- `container: HTMLElement` — основной элемент компонента.
 
 ### Методы
 
-- `render(data?: Partial<T>): HTMLElement` — передаёт данные в сеттеры компонента и возвращает корневой элемент;
-- `setImage(element: HTMLImageElement, src: string, alt?: string): void` — устанавливает изображение и альтернативный текст.
+- `render(data?: Partial<T>): HTMLElement` — передаёт данные в компонент и возвращает его разметку;
+- `setImage(element: HTMLImageElement, src: string, alt?: string): void` — устанавливает изображение и `alt`.
 
-## Класс `Api`
+## `Api`
 
-Базовый класс выполнения HTTP-запросов.
+Базовый класс для HTTP-запросов.
 
 ### Конструктор
 
-`constructor(baseUrl: string, options: RequestInit = {})`.
+```ts
+constructor(baseUrl: string, options: RequestInit = {})
+```
 
 ### Поля
 
-- `baseUrl: string` — базовый URL сервера;
-- `options: RequestInit` — общие параметры HTTP-запросов.
+- `baseUrl: string` — базовый адрес сервера;
+- `options: RequestInit` — общие параметры запросов.
 
 ### Методы
 
 - `get<T extends object>(uri: string): Promise<T>` — GET-запрос;
-- `post<T extends object>(uri: string, data: object, method?: ApiPostMethods): Promise<T>` — POST/PUT/DELETE-запрос;
+- `post<T extends object>(uri: string, data: object, method?: ApiPostMethods): Promise<T>` — POST, PUT или DELETE;
 - `handleResponse<T>(response: Response): Promise<T>` — обработка ответа сервера.
 
-## Класс `EventEmitter`
+## `EventEmitter`
 
-Брокер событий, реализующий паттерн «Наблюдатель».
-
-### Конструктор
-
-Не принимает параметров.
-
-### Поля
-
-- `_events: Map<EventName, Set<Subscriber>>` — зарегистрированные подписчики.
+Брокер событий. Используется для связи моделей, представлений и Presenter.
 
 ### Методы
 
-- `on<T extends object>(eventName: EventName, callback: (event: T) => void): void` — подписка;
-- `off(eventName: EventName, callback: Subscriber): void` — удаление подписки;
-- `emit<T extends object>(eventName: string, data?: T): void` — генерация события;
-- `onAll(callback: (event: EmitterEvent) => void): void` — подписка на все события;
+- `on<T extends object>(eventName, callback): void` — подписка на событие;
+- `off(eventName, callback): void` — удаление подписки;
+- `emit<T extends object>(eventName, data?): void` — генерация события;
+- `onAll(callback): void` — подписка на все события;
 - `offAll(): void` — удаление всех подписок;
-- `trigger<T extends object>(eventName: string, context?: Partial<T>): (data: T) => void` — создание обработчика, генерирующего событие.
+- `trigger<T extends object>(eventName, context?): (data: T) => void` — создаёт обработчик, который генерирует событие.
 
-# Данные
+# Типы данных
 
-Все типы приложения объявлены в `src/types/index.ts`.
+Все типы находятся в `src/types/index.ts`.
 
-## Основные типы предметной области
-
-### `ApiPostMethods`
+## API
 
 ```ts
-type ApiPostMethods = 'POST' | 'PUT' | 'DELETE';
-```
+export type ApiPostMethods = 'POST' | 'PUT' | 'DELETE';
 
-Поддерживаемые методом `Api.post` HTTP-методы.
-
-### `IApi`
-
-```ts
-interface IApi {
+export interface IApi {
   get<T extends object>(uri: string): Promise<T>;
-  post<T extends object>(uri: string, data: object, method?: ApiPostMethods): Promise<T>;
+  post<T extends object>(
+    uri: string,
+    data: object,
+    method?: ApiPostMethods
+  ): Promise<T>;
 }
 ```
 
-Интерфейс коммуникационной зависимости `LarekApi`.
+`IApi` используется как зависимость коммуникационного класса `LarekApi`.
 
-### `TPayment`
-
-```ts
-type TPayment = 'card' | 'cash';
-```
-
-Способы оплаты заказа.
-
-### `IProduct`
+## Товар
 
 ```ts
-interface IProduct {
+export interface IProduct {
   id: string;
   description: string;
   image: string;
@@ -161,12 +149,14 @@ interface IProduct {
 }
 ```
 
-Данные одного товара. `price: null` означает, что товар недоступен для покупки.
+`price: null` означает, что товар нельзя купить.
 
-### `IBuyer`
+## Покупатель
 
 ```ts
-interface IBuyer {
+export type TPayment = 'card' | 'cash';
+
+export interface IBuyer {
   payment: TPayment | '';
   email: string;
   phone: string;
@@ -174,97 +164,99 @@ interface IBuyer {
 }
 ```
 
-Данные покупателя. Пустая строка `payment` используется до выбора способа оплаты.
+Пустая строка в `payment` используется до выбора способа оплаты.
 
-### `TBuyerErrors`
+Ошибки проверки полей:
 
 ```ts
-type TBuyerErrors = Partial<Record<keyof IBuyer, string>>;
+export type TBuyerErrors =
+  Partial<Record<keyof IBuyer, string>>;
 ```
 
-Ошибки валидации полей покупателя.
-
-### `IProductsResponse`
+## Ответ каталога
 
 ```ts
-interface IProductsResponse {
+export interface IProductsResponse {
   total: number;
   items: IProduct[];
 }
 ```
 
-Ответ сервера со списком товаров.
-
-### `IOrder`
+## Заказ
 
 ```ts
-interface IOrder extends Omit<IBuyer, 'payment'> {
+export interface IOrder extends Omit<IBuyer, 'payment'> {
   payment: TPayment;
   total: number;
   items: string[];
 }
 ```
 
-Заказ, отправляемый на сервер.
+В `items` передаются id выбранных товаров.
 
-### `IOrderResult`
+Ответ сервера после оформления:
 
 ```ts
-interface IOrderResult {
+export interface IOrderResult {
   id: string;
   total: number;
 }
 ```
 
-Ответ сервера после успешного заказа.
+## Типы View
 
-## Типы слоя View и событий
+Для компонентов представления используются отдельные интерфейсы:
 
-- `IPageView` — каталог и количество товаров в корзине;
-- `ICardView` — общие отображаемые данные карточки;
-- `IPreviewCardView` — карточка подробного просмотра плюс состояние кнопки;
-- `IBasketCardView` — компактная карточка плюс порядковый номер;
-- `IBasketView` — элементы корзины, сумма и доступность оформления;
-- `IFormView` — валидность формы и список ошибок;
-- `IOrderFormView` — состояние формы оплаты и адреса;
-- `IContactsFormView` — состояние формы email и телефона;
-- `ISuccessView` — итоговая сумма успешного заказа;
-- `IProductEvent` — `id` товара в событии;
-- `IFormChangeEvent` — имя изменённого поля покупателя и его значение.
+- `IPageView` — каталог и счётчик корзины;
+- `ICardView` — общие для всех карточек данные: название и цена;
+- `ICatalogCardView` — изображение и категория карточки каталога;
+- `IPreviewCardView` — данные подробной карточки и состояние кнопки;
+- `IBasketCardView` — данные карточки в корзине;
+- `IBasketView` — список товаров, сумма и состояние кнопки оформления;
+- `IFormView` — валидность формы и ошибки;
+- `IOrderFormView` — данные первого шага оформления;
+- `IContactsFormView` — данные второго шага;
+- `ISuccessView` — сумма успешного заказа;
+- `IProductEvent` — id товара в событии;
+- `IFormChangeEvent` — имя изменённого поля и новое значение.
 
 # Модели данных
 
-Модели не содержат DOM-логики и не выполняют запросов к серверу. В конструктор каждой модели передаётся объект `IEvents`. Изменения состояния сопровождаются соответствующим событием.
+## `Products`
 
-## Класс `Products`
-
-Хранит каталог и товар, выбранный для подробного просмотра.
+Хранит каталог товаров и товар, выбранный для подробного просмотра.
 
 ### Конструктор
 
-`constructor(events: IEvents)` — принимает брокер событий.
+```ts
+constructor(events: IEvents)
+```
 
 ### Поля
 
-- `items: IProduct[]` — массив товаров;
+- `items: IProduct[]` — каталог;
 - `selectedItem: IProduct | null` — выбранный товар;
 - `events: IEvents` — брокер событий.
 
 ### Методы
 
-- `setItems(items: IProduct[]): void` — сохраняет каталог и генерирует `products:changed`;
-- `getItems(): IProduct[]` — возвращает копию каталога;
+- `setItems(items: IProduct[]): void` — сохраняет каталог;
+- `getItems(): IProduct[]` — возвращает товары;
 - `getItemById(id: string): IProduct | undefined` — ищет товар по id;
-- `setSelectedItem(item: IProduct): void` — сохраняет выбранный товар и генерирует `product:selected`;
+- `setSelectedItem(item: IProduct): void` — сохраняет выбранный товар;
 - `getSelectedItem(): IProduct | null` — возвращает выбранный товар.
 
-## Класс `Basket`
+При изменении каталога генерируется `products:changed`, при изменении выбранного товара — `product:selected`.
 
-Хранит товары, выбранные для покупки.
+## `Basket`
+
+Хранит товары, добавленные в корзину.
 
 ### Конструктор
 
-`constructor(events: IEvents)` — принимает брокер событий.
+```ts
+constructor(events: IEvents)
+```
 
 ### Поля
 
@@ -273,21 +265,25 @@ interface IOrderResult {
 
 ### Методы
 
-- `getItems(): IProduct[]` — возвращает копию массива корзины;
-- `addItem(item: IProduct): void` — добавляет отсутствующий товар и генерирует `basket:changed`;
-- `removeItem(item: IProduct): void` — удаляет существующий товар и генерирует `basket:changed`;
-- `clear(): void` — очищает непустую корзину и генерирует `basket:changed`;
-- `getTotal(): number` — вычисляет стоимость товаров;
+- `getItems(): IProduct[]` — возвращает товары корзины;
+- `addItem(item: IProduct): void` — добавляет товар;
+- `removeItem(item: IProduct): void` — удаляет товар;
+- `clear(): void` — очищает корзину;
+- `getTotal(): number` — считает итоговую стоимость;
 - `getCount(): number` — возвращает количество товаров;
 - `hasItem(id: string): boolean` — проверяет наличие товара по id.
 
-## Класс `Buyer`
+При изменении корзины генерируется событие `basket:changed`.
 
-Хранит данные покупателя и выполняет их валидацию.
+## `Buyer`
+
+Хранит данные покупателя и проверяет заполнение полей.
 
 ### Конструктор
 
-`constructor(events: IEvents)` — принимает брокер событий.
+```ts
+constructor(events: IEvents)
+```
 
 ### Поля
 
@@ -296,189 +292,234 @@ interface IOrderResult {
 
 ### Методы
 
-- `setData(data: Partial<IBuyer>): void` — частично обновляет данные и генерирует `buyer:changed`;
-- `getData(): IBuyer` — возвращает копию данных;
-- `clear(): void` — очищает данные и генерирует `buyer:changed`;
+- `setData(data: Partial<IBuyer>): void` — обновляет переданные поля;
+- `getData(): IBuyer` — возвращает данные покупателя;
+- `clear(): void` — очищает данные;
 - `validate(): TBuyerErrors` — возвращает ошибки незаполненных полей.
+
+После изменения данных генерируется `buyer:changed`.
 
 # Слой представления
 
-Все классы View работают только с дочерними DOM-элементами своего корневого контейнера. Элементы находятся и сохраняются в конструкторе, слушатели устанавливаются один раз. View не хранит бизнес-данные.
+Все элементы DOM, с которыми работает компонент, находятся в его конструкторе и сохраняются в полях. Слушатели событий также устанавливаются один раз в конструкторе.
 
-## Класс `Page`
+## `Page`
 
-Отвечает за каталог на главной странице и счётчик корзины.
+Отвечает за главную страницу: каталог и счётчик корзины.
 
 ### Конструктор
 
-`constructor(container: HTMLElement, events: IEvents)`.
+```ts
+constructor(container: HTMLElement, events: IEvents)
+```
 
 ### Поля
 
 - `gallery: HTMLElement` — контейнер каталога;
-- `basketCounter: HTMLElement` — счётчик корзины;
-- `basketButton: HTMLButtonElement` — кнопка открытия корзины.
+- `basketCounter: HTMLElement` — счётчик;
+- `basketButton: HTMLButtonElement` — кнопка корзины.
 
 ### Интерфейс
 
-- сеттер `catalog: HTMLElement[]` — заменяет карточки каталога;
-- сеттер `basketCount: number` — обновляет счётчик;
-- клик по корзине генерирует `basket:open`.
+- `catalog` — заменяет содержимое каталога;
+- `basketCount` — обновляет счётчик.
 
-## Класс `Modal`
+Клик по корзине генерирует `basket:open`.
 
-Универсальный контейнер модального окна. Другие компоненты от него не наследуются.
+## `Modal`
 
-### Конструктор
-
-`constructor(container: HTMLElement, events: IEvents)`.
-
-### Поля
-
-- `closeButton: HTMLButtonElement` — крестик;
-- `contentElement: HTMLElement` — область содержимого.
-
-### Методы и интерфейс
-
-- сеттер `content: HTMLElement` — устанавливает самостоятельный компонент внутрь модального окна;
-- `open(): void` — добавляет `modal_active`;
-- `close(): void` — удаляет `modal_active` и очищает содержимое;
-- клик по крестику или оверлею генерирует `modal:close`.
-
-## Абстрактный класс `Card<T>`
-
-Общий родитель всех трёх вариантов карточек.
+Управляет общим модальным окном.
 
 ### Конструктор
 
-`constructor(container: HTMLElement)`.
+```ts
+constructor(container: HTMLElement, events: IEvents)
+```
 
 ### Поля
 
-- `titleElement: HTMLElement` — название;
-- `priceElement: HTMLElement` — цена;
-- `imageElement: HTMLImageElement | null` — изображение при наличии;
-- `categoryElement: HTMLElement | null` — категория при наличии;
-- `descriptionElement: HTMLElement | null` — описание при наличии.
+- `closeButton: HTMLButtonElement` — кнопка закрытия;
+- `contentElement: HTMLElement` — контейнер содержимого.
+
+### Методы
+
+- `content` — устанавливает содержимое;
+- `open(): void` — открывает окно;
+- `close(): void` — закрывает окно и очищает содержимое.
+
+Закрытие по крестику или оверлею генерирует `modal:close`.
+
+## `Card<T>`
+
+Абстрактный родитель всех вариантов карточки.
+
+### Конструктор
+
+```ts
+constructor(container: HTMLElement)
+```
+
+### Поля
+
+- `titleElement: HTMLElement` — название товара;
+- `priceElement: HTMLElement` — цена.
+
+Базовый класс содержит только поля, которые есть во всех трёх вариантах карточки. Через сеттеры `title` и `price` обновляет общую часть разметки.
+
+## `CatalogCard`
+
+Карточка товара в каталоге. Наследуется от `Card<ICatalogCardView>`.
+
+### Конструктор
+
+```ts
+constructor(
+  container: HTMLElement,
+  events: IEvents,
+  productId: string
+)
+```
+
+### Поля
+
+- `imageElement: HTMLImageElement` — изображение;
+- `categoryElement: HTMLElement` — категория.
+
+Сеттеры `image` и `category` обновляют данные, которые есть только у карточек каталога. Клик по карточке генерирует `card:select`.
+
+## `PreviewCard`
+
+Карточка подробного просмотра. Наследуется от `Card<IPreviewCardView>`.
+
+### Конструктор
+
+```ts
+constructor(container: HTMLElement, events: IEvents)
+```
+
+Компонент создаётся один раз и переиспользуется для разных товаров. Выбранный товар хранится в модели `Products`, поэтому `PreviewCard` не хранит его id.
+
+### Поля
+
+- `imageElement: HTMLImageElement` — изображение;
+- `categoryElement: HTMLElement` — категория;
+- `descriptionElement: HTMLElement` — описание;
+- `actionButton: HTMLButtonElement` — кнопка действия.
 
 ### Интерфейс
 
-Сеттеры `title`, `price`, `image`, `category`, `description`. Категория отображается с классом из `categoryMap`.
+- `image` — изображение товара;
+- `category` — категория;
+- `description` — описание;
+- `buttonText` — текст кнопки;
+- `buttonDisabled` — состояние `disabled`.
 
-## Класс `CatalogCard`
+Клик по кнопке генерирует `product:action`. Presenter получает выбранный товар из модели и решает, добавить его в корзину или удалить.
 
-Наследует `Card<ICardView>`. Отображает товар в каталоге.
+## `BasketCard`
 
-### Конструктор
-
-`constructor(container: HTMLElement, events: IEvents, productId: string)`.
-
-Клик по карточке генерирует `card:select` с id товара.
-
-## Класс `PreviewCard`
-
-Наследует `Card<IPreviewCardView>`. Отображает подробную информацию о товаре.
+Карточка товара в корзине. Наследуется от `Card<IBasketCardView>`.
 
 ### Конструктор
 
-`constructor(container: HTMLElement, events: IEvents, actionEvent: string, productId: string)`.
+```ts
+constructor(
+  container: HTMLElement,
+  events: IEvents,
+  productId: string
+)
+```
 
 ### Поля
 
-- `actionButton: HTMLButtonElement` — кнопка покупки/удаления.
-
-### Интерфейс
-
-- сеттер `buttonText: string`;
-- сеттер `buttonDisabled: boolean`;
-- клик по кнопке генерирует переданное событие товара.
-
-## Класс `BasketCard`
-
-Наследует `Card<IBasketCardView>`. Отображает товар в корзине.
-
-### Конструктор
-
-`constructor(container: HTMLElement, events: IEvents, productId: string)`.
-
-### Поля
-
-- `indexElement: HTMLElement` — номер позиции;
+- `indexElement: HTMLElement` — номер товара;
 - `deleteButton: HTMLButtonElement` — кнопка удаления.
 
-### Интерфейс
+Сеттер `index` устанавливает номер позиции. Удаление генерирует `basket:remove`.
 
-- сеттер `index: number`;
-- удаление генерирует `basket:remove`.
+## `BasketView`
 
-## Класс `BasketView`
-
-Отвечает за содержимое корзины.
+Отображает содержимое корзины.
 
 ### Конструктор
 
-`constructor(container: HTMLElement, events: IEvents)`.
+```ts
+constructor(container: HTMLElement, events: IEvents)
+```
 
 ### Поля
 
-- `listElement: HTMLElement` — список товаров;
+- `listElement: HTMLElement` — список;
 - `totalElement: HTMLElement` — сумма;
 - `orderButton: HTMLButtonElement` — кнопка оформления.
 
 ### Интерфейс
 
-- сеттер `items: HTMLElement[]`;
-- сеттер `total: number`;
-- сеттер `valid: boolean` — управляет `disabled`;
-- клик по оформлению генерирует `order:open`.
+- `items` — карточки товаров;
+- `total` — итоговая стоимость;
+- `valid` — доступность кнопки оформления.
 
-## Абстрактный класс `Form<T>`
+Клик по кнопке генерирует `order:open`.
 
-Общий родитель обеих форм.
+## `Form<T>`
+
+Абстрактный родитель форм оформления.
 
 ### Конструктор
 
-`constructor(container: HTMLFormElement, events: IEvents, submitEvent: string)`.
+```ts
+constructor(
+  container: HTMLFormElement,
+  events: IEvents,
+  submitEvent: string
+)
+```
 
 ### Поля
 
-- `submitButton: HTMLButtonElement` — submit-кнопка;
-- `errorsElement: HTMLElement` — область ошибок.
+- `submitButton: HTMLButtonElement` — кнопка отправки;
+- `errorsElement: HTMLElement` — контейнер ошибок.
 
 ### Интерфейс
 
-- сеттер `valid: boolean` — доступность submit-кнопки;
-- сеттер `errors: string[]` — отображение ошибок;
-- изменение input генерирует `form:change`;
-- submit генерирует событие, переданное в конструктор.
+- `valid` — управляет доступностью submit-кнопки;
+- `errors` — выводит ошибки.
 
-## Класс `OrderForm`
+Изменение поля генерирует `form:change`, отправка формы — событие, переданное в `submitEvent`.
 
-Наследует `Form<IOrderFormView>`. Первый шаг заказа.
+## `OrderForm`
+
+Первый шаг оформления заказа. Наследуется от `Form<IOrderFormView>`.
 
 ### Конструктор
 
-`constructor(container: HTMLFormElement, events: IEvents)`.
+```ts
+constructor(container: HTMLFormElement, events: IEvents)
+```
 
 ### Поля
 
-- `paymentButtons: HTMLButtonElement[]` — кнопки оплаты;
+- `paymentButtons: HTMLButtonElement[]` — способы оплаты;
 - `addressInput: HTMLInputElement` — адрес.
 
 ### Интерфейс
 
-- сеттер `payment: TPayment | ''` — выделяет выбранную кнопку модификатором `button_alt-active`;
-- сеттер `address: string`;
-- выбор оплаты генерирует `form:change`;
-- submit генерирует `order:submit`.
+- `payment` — выбранный способ оплаты;
+- `address` — адрес доставки.
 
-## Класс `ContactsForm`
+Выбранная кнопка оплаты получает класс `button_alt-active`.
 
-Наследует `Form<IContactsFormView>`. Второй шаг заказа.
+Submit генерирует `order:submit`.
+
+## `ContactsForm`
+
+Второй шаг оформления. Наследуется от `Form<IContactsFormView>`.
 
 ### Конструктор
 
-`constructor(container: HTMLFormElement, events: IEvents)`.
+```ts
+constructor(container: HTMLFormElement, events: IEvents)
+```
 
 ### Поля
 
@@ -487,87 +528,97 @@ interface IOrderResult {
 
 ### Интерфейс
 
-- сеттер `email: string`;
-- сеттер `phone: string`;
-- submit генерирует `contacts:submit`.
+- `email` — почта;
+- `phone` — телефон.
 
-## Класс `Success`
+Submit генерирует `contacts:submit`.
 
-Отображает результат успешного заказа.
+## `Success`
+
+Показывает результат успешного заказа.
 
 ### Конструктор
 
-`constructor(container: HTMLElement, events: IEvents)`.
+```ts
+constructor(container: HTMLElement, events: IEvents)
+```
 
 ### Поля
 
-- `descriptionElement: HTMLElement` — сумма списания;
+- `descriptionElement: HTMLElement` — текст с суммой;
 - `closeButton: HTMLButtonElement` — кнопка закрытия.
 
-### Интерфейс
+Сеттер `total` устанавливает сумму заказа. Кнопка закрытия генерирует `success:close`.
 
-- сеттер `total: number`;
-- клик по кнопке генерирует `success:close`.
+# Работа с сервером
 
-# Слой коммуникации
+## `LarekApi`
 
-## Класс `LarekApi`
-
-Предметный коммуникационный класс. Использует базовый `Api` через композицию и зависит от интерфейса `IApi`.
+Класс предметного API. Использует базовый `Api` через композицию.
 
 ### Конструктор
 
-`constructor(api: IApi)`.
+```ts
+constructor(api: IApi)
+```
 
 ### Поля
 
-- `api: IApi` — read-only коммуникационная зависимость.
+- `api: IApi` — объект для выполнения запросов.
 
 ### Методы
 
-- `getProducts(): Promise<IProductsResponse>` — GET `/product/`;
-- `createOrder(order: IOrder): Promise<IOrderResult>` — POST `/order/`.
+```ts
+getProducts(): Promise<IProductsResponse>
+```
 
-# События приложения
+Получает каталог через `GET /product/`.
 
-Имена событий хранятся в константе `EVENTS` в `src/utils/constants.ts`.
+```ts
+createOrder(order: IOrder): Promise<IOrderResult>
+```
+
+Отправляет заказ через `POST /order/`.
+
+# События
+
+Имена событий находятся в `EVENTS` в `src/utils/constants.ts`.
 
 ## События моделей
 
-- `products:changed` — изменился каталог товаров;
-- `product:selected` — изменился товар, выбранный для подробного просмотра;
-- `basket:changed` — изменилось содержимое корзины;
+- `products:changed` — изменился каталог;
+- `product:selected` — изменился выбранный товар;
+- `basket:changed` — изменилась корзина;
 - `buyer:changed` — изменились данные покупателя.
 
 ## События представлений
 
-- `card:select` — пользователь выбрал карточку каталога;
-- `product:add` — пользователь нажал «Купить»;
-- `product:remove` — пользователь удаляет товар из подробной карточки;
-- `basket:open` — пользователь открывает корзину;
-- `basket:remove` — пользователь удаляет позицию из корзины;
-- `order:open` — пользователь начинает оформление;
-- `form:change` — изменено поле формы;
-- `order:submit` — переход с первого шага на второй;
+- `card:select` — выбрана карточка каталога;
+- `product:action` — нажатие основной кнопки подробной карточки;
+- `basket:open` — открытие корзины;
+- `basket:remove` — удаление товара из корзины;
+- `order:open` — переход к оформлению;
+- `form:change` — изменение поля формы;
+- `order:submit` — переход ко второму шагу;
 - `contacts:submit` — отправка заказа;
 - `modal:close` — закрытие модального окна;
-- `success:close` — закрытие сообщения об успешном заказе.
+- `success:close` — закрытие окна успешного заказа.
 
 # Presenter
 
-Presenter реализован в `src/main.ts` функциями и обработчиками событий, без отдельного класса.
+Presenter реализован в `src/main.ts`.
 
-Он выполняет следующие сценарии:
+Основная логика приложения:
 
-1. Создаёт единый `EventEmitter`, модели, коммуникационный слой и View-компоненты.
-2. Загружает товары через `LarekApi.getProducts()` и сохраняет их в `Products`.
-3. По `products:changed` получает каталог из модели, создаёт `CatalogCard` для каждого товара и передаёт разметку в `Page`.
-4. По выбору товара сохраняет его в `Products`, а по `product:selected` открывает `PreviewCard` в `Modal`.
-5. Состояние кнопки подробной карточки определяется в Presenter: «Купить», «Удалить из корзины» или «Недоступно».
-6. Изменения `Basket` обновляют список, сумму и счётчик корзины.
-7. Изменения формы сохраняются в `Buyer`. По `buyer:changed` Presenter получает данные и ошибки модели и передаёт соответствующее состояние в обе формы.
-8. После корректного первого шага открывается форма контактов.
-9. После корректного второго шага Presenter собирает `IOrder` из `Buyer` и `Basket` и вызывает `LarekApi.createOrder()`.
-10. После успешного ответа показывает `Success`, очищает корзину и данные покупателя.
+1. Один раз создаются `Page`, `Modal`, `BasketView`, `PreviewCard`, `OrderForm`, `ContactsForm` и `Success`. Карточки каталога и корзины создаются по количеству товаров при обновлении соответствующих моделей.
+2. Каталог загружается с сервера и сохраняется в `Products`.
+3. Только в обработчике `products:changed` перерисовывается каталог.
+4. При выборе карточки товар сохраняется как выбранный. Только в обработчике `product:selected` обновляется и открывается `PreviewCard`.
+5. `product:action` меняет только модель корзины. Состояние корзины и счётчик перерисовываются в `basket:changed`.
+6. События открытия корзины и форм только помещают уже созданный компонент в `Modal`; повторного рендера данных в этих обработчиках нет.
+7. Изменения полей сохраняются в `Buyer`. Обе формы получают новое состояние только в `buyer:changed`.
+8. После корректного первого шага открывается уже созданная форма контактов.
+9. После второго шага Presenter собирает `IOrder` и отправляет его через `LarekApi`.
+10. После успешного заказа показывается `Success`, затем очищаются `Basket` и `Buyer`, что приводит к обновлению связанных представлений через события моделей.
 
-Presenter не вызывает `emit()`: генерация событий выполняется только моделями и представлениями.
+Presenter не генерирует события. Он обрабатывает события и связывает Model и View.

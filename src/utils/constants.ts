@@ -24,8 +24,7 @@ export const EVENTS = {
   buyerChanged: 'buyer:changed',
 
   cardSelect: 'card:select',
-  productAdd: 'product:add',
-  productRemove: 'product:remove',
+  productAction: 'product:action',
   basketOpen: 'basket:open',
   basketRemove: 'basket:remove',
   orderOpen: 'order:open',
