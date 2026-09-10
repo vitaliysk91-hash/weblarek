@@ -1,6 +1,4 @@
 import { Component } from '../base/Component';
-import type { IEvents } from '../base/Events';
-import { EVENTS } from '../../utils/constants';
 import { ensureElement } from '../../utils/utils';
 
 interface IModalView {
@@ -12,7 +10,7 @@ export class Modal extends Component<IModalView> {
   private readonly closeButton: HTMLButtonElement;
   private readonly contentElement: HTMLElement;
 
-  constructor(container: HTMLElement, events: IEvents) {
+  constructor(container: HTMLElement) {
     super(container);
 
     this.closeButton = ensureElement<HTMLButtonElement>(
@@ -25,12 +23,12 @@ export class Modal extends Component<IModalView> {
     );
 
     this.closeButton.addEventListener('click', () => {
-      events.emit(EVENTS.modalClose);
+      this.close();
     });
 
     this.container.addEventListener('click', (event) => {
       if (event.target === this.container) {
-        events.emit(EVENTS.modalClose);
+        this.close();
       }
     });
   }

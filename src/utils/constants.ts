@@ -31,7 +31,6 @@ export const EVENTS = {
   orderSubmit: 'order:submit',
   contactsSubmit: 'contacts:submit',
   formChange: 'form:change',
-  modalClose: 'modal:close',
   successClose: 'success:close',
 } as const;
 

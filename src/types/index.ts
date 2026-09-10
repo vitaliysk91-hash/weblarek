@@ -52,9 +52,13 @@ export interface IOrderResult {
   total: number;
 }
 
-/** Данные, отображаемые компонентом страницы. */
-export interface IPageView {
+/** Данные, отображаемые каталогом товаров. */
+export interface IGalleryView {
   catalog: HTMLElement[];
+}
+
+/** Данные, отображаемые в шапке страницы. */
+export interface IHeaderView {
   basketCount: number;
 }
 

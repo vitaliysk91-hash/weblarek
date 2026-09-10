@@ -207,7 +207,8 @@ export interface IOrderResult {
 
 Для компонентов представления используются отдельные интерфейсы:
 
-- `IPageView` — каталог и счётчик корзины;
+- `IGalleryView` — список карточек каталога;
+- `IHeaderView` — счётчик корзины;
 - `ICardView` — общие для всех карточек данные: название и цена;
 - `ICatalogCardView` — изображение и категория карточки каталога;
 - `IPreviewCardView` — данные подробной карточки и состояние кнопки;
@@ -303,9 +304,23 @@ constructor(events: IEvents)
 
 Все элементы DOM, с которыми работает компонент, находятся в его конструкторе и сохраняются в полях. Слушатели событий также устанавливаются один раз в конструкторе.
 
-## `Page`
+## `Gallery`
 
-Отвечает за главную страницу: каталог и счётчик корзины.
+Отвечает только за отображение каталога товаров.
+
+### Конструктор
+
+```ts
+constructor(container: HTMLElement)
+```
+
+### Интерфейс
+
+- `catalog` — заменяет содержимое контейнера каталога карточками товаров.
+
+## `Header`
+
+Отвечает за шапку страницы и состояние корзины.
 
 ### Конструктор
 
@@ -315,14 +330,12 @@ constructor(container: HTMLElement, events: IEvents)
 
 ### Поля
 
-- `gallery: HTMLElement` — контейнер каталога;
-- `basketCounter: HTMLElement` — счётчик;
+- `basketCounter: HTMLElement` — счётчик товаров корзины;
 - `basketButton: HTMLButtonElement` — кнопка корзины.
 
 ### Интерфейс
 
-- `catalog` — заменяет содержимое каталога;
-- `basketCount` — обновляет счётчик.
+- `basketCount` — обновляет счётчик товаров.
 
 Клик по корзине генерирует `basket:open`.
 
@@ -333,7 +346,7 @@ constructor(container: HTMLElement, events: IEvents)
 ### Конструктор
 
 ```ts
-constructor(container: HTMLElement, events: IEvents)
+constructor(container: HTMLElement)
 ```
 
 ### Поля
@@ -347,7 +360,7 @@ constructor(container: HTMLElement, events: IEvents)
 - `open(): void` — открывает окно;
 - `close(): void` — закрывает окно и очищает содержимое.
 
-Закрытие по крестику или оверлею генерирует `modal:close`.
+Клик по крестику или оверлею напрямую вызывает `close()` у модального окна.
 
 ## `Card<T>`
 
@@ -601,7 +614,6 @@ createOrder(order: IOrder): Promise<IOrderResult>
 - `form:change` — изменение поля формы;
 - `order:submit` — переход ко второму шагу;
 - `contacts:submit` — отправка заказа;
-- `modal:close` — закрытие модального окна;
 - `success:close` — закрытие окна успешного заказа.
 
 # Presenter
@@ -610,7 +622,7 @@ Presenter реализован в `src/main.ts`.
 
 Основная логика приложения:
 
-1. Один раз создаются `Page`, `Modal`, `BasketView`, `PreviewCard`, `OrderForm`, `ContactsForm` и `Success`. Карточки каталога и корзины создаются по количеству товаров при обновлении соответствующих моделей.
+1. Один раз создаются `Gallery`, `Header`, `Modal`, `BasketView`, `PreviewCard`, `OrderForm`, `ContactsForm` и `Success`. Карточки каталога и корзины создаются по количеству товаров при обновлении соответствующих моделей.
 2. Каталог загружается с сервера и сохраняется в `Products`.
 3. Только в обработчике `products:changed` перерисовывается каталог.
 4. При выборе карточки товар сохраняется как выбранный. Только в обработчике `product:selected` обновляется и открывается `PreviewCard`.

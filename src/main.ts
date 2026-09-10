@@ -9,9 +9,10 @@ import { BasketCard } from './components/View/BasketCard';
 import { BasketView } from './components/View/BasketView';
 import { CatalogCard } from './components/View/CatalogCard';
 import { ContactsForm } from './components/View/ContactsForm';
+import { Gallery } from './components/View/Gallery';
+import { Header } from './components/View/Header';
 import { Modal } from './components/View/Modal';
 import { OrderForm } from './components/View/OrderForm';
-import { Page } from './components/View/Page';
 import { PreviewCard } from './components/View/PreviewCard';
 import { Success } from './components/View/Success';
 import type {
@@ -37,8 +38,9 @@ const buyerModel = new Buyer(events);
 const api = new Api(API_URL);
 const larekApi = new LarekApi(api);
 
-const page = new Page(ensureElement<HTMLElement>('.page'), events);
-const modal = new Modal(ensureElement<HTMLElement>('#modal-container'), events);
+const gallery = new Gallery(ensureElement<HTMLElement>('.gallery'));
+const header = new Header(ensureElement<HTMLElement>('.header'), events);
+const modal = new Modal(ensureElement<HTMLElement>('#modal-container'));
 const basketView = new BasketView(cloneTemplate<HTMLElement>('#basket'), events);
 const previewCard = new PreviewCard(
   cloneTemplate<HTMLElement>('#card-preview'),
@@ -77,7 +79,7 @@ function renderCatalog(): void {
     return card.render(getCatalogCardData(product));
   });
 
-  page.render({ catalog: cards });
+  gallery.render({ catalog: cards });
 }
 
 function renderBasket(): void {
@@ -102,7 +104,7 @@ function renderBasket(): void {
     valid: basketModel.getCount() > 0,
   });
 
-  page.render({ basketCount: basketModel.getCount() });
+  header.render({ basketCount: basketModel.getCount() });
 }
 
 function renderBuyerForms(): void {
@@ -269,7 +271,6 @@ events.on(EVENTS.orderOpen, openOrderForm);
 events.on(EVENTS.orderSubmit, openContactsForm);
 events.on<IFormChangeEvent>(EVENTS.formChange, updateBuyerField);
 events.on(EVENTS.contactsSubmit, submitOrder);
-events.on(EVENTS.modalClose, () => modal.close());
 events.on(EVENTS.successClose, () => modal.close());
 
 larekApi
